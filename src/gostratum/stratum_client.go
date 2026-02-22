@@ -49,16 +49,19 @@ func readFromConnection(connection net.Conn, cb LineCallback) error {
 	}
 
 	buffer := make([]byte, 1024)
-	_, err := connection.Read(buffer)
+	nbytes, err := connection.Read(buffer)
+	if nbytes > 0 {
+		buffer = bytes.ReplaceAll(buffer[:nbytes], []byte("\x00"), nil)
+		scanner := bufio.NewScanner(strings.NewReader(string(buffer)))
+		for scanner.Scan() {
+			if err := cb(scanner.Text()); err != nil {
+				return err
+			}
+		}
+	}
 	if err != nil {
 		return errors.Wrapf(err, "error reading from connection")
 	}
-	buffer = bytes.ReplaceAll(buffer, []byte("\x00"), nil)
-	scanner := bufio.NewScanner(strings.NewReader(string(buffer)))
-	for scanner.Scan() {
-		if err := cb(scanner.Text()); err != nil {
-			return err
-		}
-	}
+
 	return nil
 }

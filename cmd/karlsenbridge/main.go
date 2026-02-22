@@ -30,7 +30,7 @@ func main() {
 	flag.BoolVar(&cfg.PrintStats, "stats", cfg.PrintStats, "true to show periodic stats to console, default `true`")
 	flag.StringVar(&cfg.RPCServer, "karlsen", cfg.RPCServer, "address of the karlsend node, default `localhost:42110`")
 	flag.DurationVar(&cfg.BlockWaitTime, "blockwait", cfg.BlockWaitTime, "time in ms to wait before manually requesting new block, default `3s`")
-	flag.UintVar(&cfg.MinShareDiff, "mindiff", cfg.MinShareDiff, "minimum share difficulty to accept from miner(s), default `4096`")
+	flag.Float64Var(&cfg.MinShareDiff, "mindiff", cfg.MinShareDiff, "minimum share difficulty to accept from miner(s), default `4096`")
 	flag.BoolVar(&cfg.VarDiff, "vardiff", cfg.VarDiff, "true to enable auto-adjusting variable min diff, default `true`")
 	flag.UintVar(&cfg.SharesPerMin, "sharespermin", cfg.SharesPerMin, "number of shares per minute the vardiff engine should target, default `15`")
 	flag.BoolVar(&cfg.VarDiffStats, "vardiffstats", cfg.VarDiffStats, "include vardiff stats readout every 10s in log, default `false`")
@@ -39,7 +39,6 @@ func main() {
 	flag.StringVar(&cfg.PromPort, "prom", cfg.PromPort, "address to serve prom stats, default `:2112`")
 	flag.BoolVar(&cfg.UseLogFile, "log", cfg.UseLogFile, "if true will output errors to log file, default `true`")
 	flag.StringVar(&cfg.HealthCheckPort, "hcp", cfg.HealthCheckPort, `(rarely used) if defined will expose a health check on /readyz, default ""`)
-	flag.BoolVar(&cfg.TestnetMining, "testnetmining", cfg.TestnetMining, "enable testnet mining mode, default `false`")
 	flag.Parse()
 
 	log.Println("----------------------------------")
@@ -49,7 +48,7 @@ func main() {
 	log.Printf("\tprom:            %s", cfg.PromPort)
 	log.Printf("\tstats:           %t", cfg.PrintStats)
 	log.Printf("\tlog:             %t", cfg.UseLogFile)
-	log.Printf("\tmin diff:        %d", cfg.MinShareDiff)
+	log.Printf("\tmin diff:        %f", cfg.MinShareDiff)
 	log.Printf("\tvar diff:        %t", cfg.VarDiff)
 	log.Printf("\tsolo mining:  	 %t", cfg.SoloMining)
 	log.Printf("\tshares per min:  %d", cfg.SharesPerMin)
@@ -57,7 +56,6 @@ func main() {
 	log.Printf("\tblock wait:      %s", cfg.BlockWaitTime)
 	log.Printf("\textranonce size: %d", cfg.ExtranonceSize)
 	log.Printf("\thealth check:    %s", cfg.HealthCheckPort)
-	log.Printf("\ttestnet mining:  %t", cfg.TestnetMining)
 	log.Println("----------------------------------")
 
 	if err := karlsenstratum.ListenAndServe(cfg); err != nil {

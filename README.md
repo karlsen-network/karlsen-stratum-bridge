@@ -1,23 +1,22 @@
 # Karlsen Stratum Adapter
+[![Join the Karlsen Discord Server](https://img.shields.io/discord/1169939685280337930.svg?label=&logo=discord&logoColor=ffffff)](https://discord.gg/ZPZRvgMJDT)
 
 This is a lightweight daemon that allows mining to a local (or remote)
-karlsen node using stratum-base miners.
+karlsen node using stratum-based miners.
 
 This daemon is confirmed working with the miners below in both dual-mining
 and karlsen-only modes (for those that support it) and Windows, Linux,
 macOS and HiveOS.
 
-* [srbminer](https://github.com/doktor83/SRBMiner-Multi/releases)
+- **Official miners:**
+  - [GPU miner](https://github.com/karlsen-network/karlsen-miner/releases/latest) (reference implementation)
+- **Third-party miners with KarlsenHashv2 support:**
+  - [lolMiner](https://github.com/Lolliedieb/lolMiner-releases)
+  - [BzMiner](https://github.com/bzminer/bzminer)
+  - [SRBMiner](https://github.com/doktor83/SRBMiner-Multi)
+  - [Rigel](https://github.com/rigelminer/rigel)
 
-Discord discussions/issues: [here](https://discord.gg/ZPZRvgMJDT)
-
-[![Join the Karlsen Discord Server](https://img.shields.io/discord/1169939685280337930.svg?label=&logo=discord&logoColor=ffffff)](https://discord.gg/ZPZRvgMJDT)
-
-Huge shoutout to https://github.com/KaffinPX/KStratum and
-https://github.com/onemorebsmith/karlsen-stratum-bridge and
-https://github.com/rdugan/kaspa-stratum-bridge for the inspiration.
-
-Tips appreciated: `karlsen:qqe3p64wpjf5y27kxppxrgks298ge6lhu6ws7ndx4tswzj7c84qkjlrspcuxw`
+**Tips appreciated**: `karlsen:qqe3p64wpjf5y27kxppxrgks298ge6lhu6ws7ndx4tswzj7c84qkjlrspcuxw`
 
 ## Hive Setup
 
@@ -34,7 +33,7 @@ Shares-based work allocation with miner-like periodic stat output:
  lemois         |       0.13GH/s |          3/0/0 |            0 |       6m48s
 -------------------------------------------------------------------------------
                 |       0.13GH/s |          3/0/0 |            0 |       7m20s
-========================================================= kls_bridge_v2.2.0 ===
+========================================================= kls_bridge_v2.3.0 ===
 ```
 
 ## Variable difficulty engine (vardiff)
@@ -181,3 +180,10 @@ previous behavior of pulling down a pre-built image. You may still use
 the pre-built image by issuing the command `docker run -p 5555:5555 karlsennetwork/karlsen_bridge:latest`,
 but it is not guaranteed to be up to date, so compiling from source is
 the better alternative.
+
+## Credits
+Huge shoutout to https://github.com/KaffinPX/KStratum for the inspiration
+  
+Tips appreciated: 
+- [@onemorebsmith](https://github.com/onemorebsmith): `kaspa:qp9v6090sr8jjlkq7r3f4h9un5rtfhu3raknfg3cca9eapzee57jzew0kxwlp`
+- [@rdugan](https://github.com/rdugan): `kaspa:qrkhyhej7h0gmmvsuf8mmufget4n4xnlwx5j360sz70q7xvu0hlaxfmt9p8j8`

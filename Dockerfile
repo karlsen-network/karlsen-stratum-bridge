@@ -1,5 +1,5 @@
 # Many thanks to original author Brandon Smith (onemorebsmith).
-FROM golang:1.21.3 AS builder
+FROM golang:1.24.1 AS builder
 
 LABEL org.opencontainers.image.description="Dockerized Karlsen Stratum Bridge"
 LABEL org.opencontainers.image.authors="Karlsen Community"

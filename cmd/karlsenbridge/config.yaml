@@ -10,10 +10,6 @@ stratum_port: :5555
 karlsend_address: localhost:42110
 #karlsend_address: localhost:42210
 
-# enabling this setting by changing it to true ensures that the correct
-# prefix handling for testnet addresses is applied
-testnet_mining: false
-
 # solo_mining: if true, use network difficulty instead of stratum variable difficulty (vardiff)
 solo_mining: false
 

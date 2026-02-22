@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
+	"github.com/karlsen-network/karlsen-stratum-bridge/v2/src/utils"
 	"github.com/karlsen-network/karlsend/v2/util"
 	"github.com/mattn/go-colorable"
 	"github.com/pkg/errors"
@@ -25,31 +27,31 @@ func DefaultLogger() *zap.Logger {
 	cfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	return zap.New(zapcore.NewCore(
 		zapcore.NewConsoleEncoder(cfg),
-		zapcore.AddSync(colorable.NewColorableStdout()),
+		&utils.BufferedWriteSyncer{WS: zapcore.AddSync(colorable.NewColorableStdout()), FlushInterval: 5 * time.Second},
 		zapcore.DebugLevel,
 	))
 }
 
-func DefaultConfig(logger *zap.Logger, testnetMining bool) StratumListenerConfig {
+func DefaultConfig(logger *zap.Logger) StratumListenerConfig {
 	return StratumListenerConfig{
 		StateGenerator: func() any { return nil },
-		HandlerMap:     DefaultHandlers(testnetMining),
+		HandlerMap:     DefaultHandlers(),
 		Port:           ":5555",
 		Logger:         logger,
 	}
 }
 
-func DefaultHandlers(testnetMining bool) StratumHandlerMap {
+func DefaultHandlers() StratumHandlerMap {
 	return StratumHandlerMap{
 		string(StratumMethodSubscribe): HandleSubscribe,
 		string(StratumMethodAuthorize): func(ctx *StratumContext, event JsonRpcEvent) error {
-			return HandleAuthorize(ctx, event, testnetMining)
+			return HandleAuthorize(ctx, event)
 		},
 		string(StratumMethodSubmit): HandleSubmit,
 	}
 }
 
-func HandleAuthorize(ctx *StratumContext, event JsonRpcEvent, testnetMining bool) error {
+func HandleAuthorize(ctx *StratumContext, event JsonRpcEvent) error {
 	if len(event.Params) < 1 {
 		return fmt.Errorf("malformed event from miner, expected param[1] to be address")
 	}
@@ -64,7 +66,8 @@ func HandleAuthorize(ctx *StratumContext, event JsonRpcEvent, testnetMining bool
 		workerName = parts[1]
 	}
 
-	address, err := CleanWallet(address, testnetMining)
+	var err error
+	address, err = CleanWallet(address)
 	if err != nil {
 		return fmt.Errorf("invalid wallet format %s: %w", address, err)
 	}
@@ -112,36 +115,21 @@ func SendExtranonce(ctx *StratumContext) {
 	}
 }
 
-// CleanWallet function handles both testnet and mainnet wallet addresses
-func CleanWallet(in string, testnetMining bool) (string, error) {
-	if testnetMining {
-		// handle testnet wallet prefix and regex
-		fmt.Printf("Switching to testnet address handling: %s\n", in)
-		_, err := util.DecodeAddress(in, util.Bech32PrefixKarlsenTest)
-		if err == nil {
-			return in, nil // valid testnet address
-		}
-		if !strings.HasPrefix(in, "karlsentest:") {
-			in = "karlsentest:" + in
-		}
-		// validate the address format using regex
-		if regexp.MustCompile("^karlsentest:[a-z0-9]+$").MatchString(in) {
-			return in[:73], nil
-		}
-	} else {
-		// handle mainnet wallet prefix and regex
-		fmt.Printf("Handling mainnet address: %s\n", in)
-		_, err := util.DecodeAddress(in, util.Bech32PrefixKarlsen)
-		if err == nil {
-			return in, nil // valid mainnet address
-		}
-		if !strings.HasPrefix(in, "karlsen:") {
-			in = "karlsen:" + in
-		}
-		// validate the address format using regex
-		if regexp.MustCompile("^karlsen:[a-z0-9]+$").MatchString(in) {
-			return in[:69], nil
-		}
+var walletRegex = regexp.MustCompile("karlsen(test)?:([a-z0-9]{61}|[a-z0-9]{63})")
+
+func CleanWallet(in string) (string, error) {
+	_, err := util.DecodeAddress(in, util.Bech32PrefixKarlsen)
+	if err == nil {
+		return in, nil // good to go
+	}
+	if !strings.HasPrefix(in, "karlsen:") && !strings.HasPrefix(in, "karlsentest:") {
+		return CleanWallet("karlsen:" + in)
+	}
+
+	// has karlsen: prefix but other weirdness somewhere
+	var match = walletRegex.FindString(in)
+	if len(match) > 0 {
+		return match, nil
 	}
 	return "", errors.New("unable to coerce wallet to valid karlsen address")
 }

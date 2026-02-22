@@ -99,14 +99,8 @@ func (s *KarlsenApi) waitForSync(verbose bool) error {
 }
 
 func (s *KarlsenApi) startBlockTemplateListener(ctx context.Context, blockReadyCb func()) {
-	blockReadyChan := make(chan bool)
-	err := s.karlsend.RegisterForNewBlockTemplateNotifications(func(_ *appmessage.NewBlockTemplateNotificationMessage) {
-		blockReadyChan <- true
-	})
-	if err != nil {
-		s.logger.Error("fatal: failed to register for block notifications from karlsen")
-	}
-
+	var blockReadyChan chan bool
+	restartChannel := true
 	ticker := time.NewTicker(s.blockWaitTime)
 	for {
 		if err := s.waitForSync(false); err != nil {
@@ -114,6 +108,18 @@ func (s *KarlsenApi) startBlockTemplateListener(ctx context.Context, blockReadyC
 			if err := s.reconnect(); err != nil {
 				s.logger.Error("error reconnecting to karlsend, waiting before retry: ", err)
 				time.Sleep(5 * time.Second)
+			}
+			restartChannel = true
+		}
+		if restartChannel {
+			blockReadyChan = make(chan bool)
+			err := s.karlsend.RegisterForNewBlockTemplateNotifications(func(_ *appmessage.NewBlockTemplateNotificationMessage) {
+				blockReadyChan <- true
+			})
+			if err != nil {
+				s.logger.Error("fatal: failed to register for block notifications from karlsen")
+			} else {
+				restartChannel = false
 			}
 		}
 		select {
